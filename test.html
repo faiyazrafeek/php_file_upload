@@ -1,0 +1,84 @@
+
+    <script>
+        stopReload = () =>{
+            document.getElementById("formdata").addEventListener("submit", function(e){
+                e.preventDefault();
+            })
+        }
+
+
+        var btn_upload = document.getElementById("btn_upload");
+        var alert_wrap = document.getElementById("alert-wrap");
+
+        var input = document.getElementById("input_file");
+
+        function show_alert(message, alert){
+            alert_wrap.innerHTML = `
+            <div class="alert alert-${alert}" role="alert">
+                ${message}
+            </div>
+            `
+            setTimeout(hide_alert, 1500);
+        }
+
+        function hide_alert(){
+            alert_wrap.classList.add("d-none");
+        }
+
+        function upload(){
+            if(!input.value){
+                show_alert("No file selected", 'warning');
+                return;
+            }else{
+                var formst = document.getElementById("formdata");    
+                var formData = new FormData();            
+                formData.append('input_file',input.files[0]);
+   
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function(){
+                    if (this.status == 200 && this.readyState==4){
+                        var respondData = JSON.parse(this.responseText);
+                        
+                        switch(respondData){
+                            case "-3":
+                                show_alert("Invalid file type", "danger");
+                            break;
+                            case "-2":
+                            show_alert("File size too big", "danger");
+                            break;
+                            case "0":
+                            show_alert("File already exists!", "info");
+                            break;
+                            default:
+                            show_alert("File uploaded", "success");
+                            break;
+                        }
+                    }
+                };
+                xhr.open("POST", "upload.php", true);
+                xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+                xhr.send(formData);
+            }
+
+        }
+
+    </script>
+
+
+
+<script>
+    function upload(){
+        var input_file = document.getElementById("formdata");
+        $.ajax({
+            url : 'upload.php',
+            method : 'POST',
+            data : new FormData(input_file),
+            contentType : false,
+            processData: false,
+            success : function(resposnse){
+                $("#alert-wrap").html(resposnse);
+            }
+
+        });
+    }
+</script>
